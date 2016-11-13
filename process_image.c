@@ -1,3 +1,7 @@
+/** 
+TODO: Only works without normalizing sums at the moment 
+*/
+
 #include <stdio.h>
 #include <math.h>
 #include <X11/Xlib.h>
@@ -14,16 +18,6 @@
 /******************************************************************/
 extern XRectangle roi;
 
-/**
-	Function Name: 	conv2()
-	Descrption:			Convolve two n x n matricies 
-	Parameters: 		TODO
-	Returns:				TODO
-*/
-void conv2() {
-		
-}
-
 /******************************************************************/
 /* Main processing routine. This is called upon pressing the      */
 /* Process button of the interface.                               */
@@ -38,7 +32,8 @@ unsigned char image[DIM][DIM];
 int size[2];
 unsigned char proc_img[DIM][DIM];
 {
-	int i, j, ii, jj;
+	int i, j, ii, jj, sum, data, coeff;
+	int proc_pixel = 0;
 	int vert[K][K] = {			
 									{-1, 0, 1},
 									{-1, 0, 1},
@@ -49,40 +44,45 @@ unsigned char proc_img[DIM][DIM];
 									{1, 1, 1} };
 	
 	/* Process vertical edges */	
-	for (i = K / 2; i < size[0] - K / 2; ++i) {
-		for (j = K / 2; j < size[1] - K / 2; ++j) {
-			int sum = 0;
+	for (i = (K / 2); i < (size[0] - (K / 2) ); ++i) {
+		for (j = K / 2; j < (size[1] - (K / 2) ); ++j) {
+			sum = 0;
 		
 			/* Iterate over kernel */	
-			for (ii = -K / 2; ii <= K / 2; ++ii) {
-				for (jj = -K / 2; jj <= K / 2; ++jj) {
-					int data = image[i + ii][j + jj];
-					int coeff = vert[ii + K / 2][jj + K / 2];
+			for (ii = (-K / 2); ii <= (K / 2); ++ii) {
+				for (jj = (-K / 2); jj <= (K / 2); ++jj) {
+					data = image[i + ii][j + jj];
+					coeff = vert[ii + (K / 2)][jj + (K / 2)];
 
-					sum += data * coeff;
+					sum = sum + (data * coeff);
+					sum = abs(sum);
 				}
 			}
+
 			/* Normalize sum of each pixel */
-			proc_img[i][j] = sum * (MAX_PIXEL / DIM);
+	;		proc_pixel = sum;// * (MAX_PIXEL / DIM); //TODO: problem with cast here
+			proc_img[i][j] = proc_pixel;
 		}
 	}
 
 	/* Process horizontal edges */	
-	for (i = K / 2; i < size[0] - K / 2; ++i) {
-		for (j = K / 2; j < size[1] - K / 2; ++j) {
-			int sum = 0;
+	for (i = (K / 2); i < (size[0] - (K / 2) ); ++i) {
+		for (j = K / 2; j < (size[1] - (K / 2) ); ++j) {
+			sum = 0;
 		
 			/* Iterate over kernel */	
-			for (ii = -K / 2; ii <= K / 2; ++ii) {
-				for (jj = -K / 2; jj <= K / 2; ++jj) {
-					int data = image[i + ii][j + jj];
-					int coeff = horiz[ii + K / 2][jj + K / 2];
+			for (ii = (-K / 2); ii <= (K / 2); ++ii) {
+				for (jj = (-K / 2); jj <= (K / 2); ++jj) {
+					data = image[i + ii][j + jj];
+					coeff = horiz[ii + (K / 2)][jj + (K / 2)];
 
-					sum += data * coeff;
+					sum = sum + (data * coeff);
+					sum = abs(sum);
 				}
 			}
 			/* Normalize sum of each pixel */
-			proc_img[i][j] = sum * (MAX_PIXEL / DIM);
+			proc_pixel = sum;// * (MAX_PIXEL / DIM);
+			proc_img[i][j] = proc_pixel;
 		}
 	}
 }

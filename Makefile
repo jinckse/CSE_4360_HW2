@@ -1033,7 +1033,7 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) 	          $(XEXTLIB) 
 
 EXTRA_LIBRARIES = -lm -Llib -lCamera
 
-CDEBUGFLAGS = -O2 -g -ggdb
+CDEBUGFLAGS = -O0 -g -ggdb
 
 PROG =	Vision
 
