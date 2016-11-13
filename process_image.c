@@ -33,7 +33,6 @@ int size[2];
 unsigned char proc_img[DIM][DIM];
 {
 	int i, j, ii, jj, sum, data, coeff;
-	int proc_pixel = 0;
 	int vert[K][K] = {			
 									{-1, 0, 1},
 									{-1, 0, 1},
@@ -60,8 +59,7 @@ unsigned char proc_img[DIM][DIM];
 			}
 
 			/* Normalize sum of each pixel */
-	;		proc_pixel = sum;// * (MAX_PIXEL / DIM); //TODO: problem with cast here
-			proc_img[i][j] = proc_pixel;
+			proc_img[i][j] = (sum * MAX_PIXEL) / DIM;
 		}
 	}
 
@@ -81,8 +79,7 @@ unsigned char proc_img[DIM][DIM];
 				}
 			}
 			/* Normalize sum of each pixel */
-			proc_pixel = sum;// * (MAX_PIXEL / DIM);
-			proc_img[i][j] = proc_pixel;
+			proc_img[i][j] = (sum * MAX_PIXEL) / DIM;
 		}
 	}
 }
