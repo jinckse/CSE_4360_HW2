@@ -36,22 +36,22 @@ unsigned char proc_img[DIM][DIM];
 	
 	int i, j, ii, jj, sum;
 	float data, coeff;
-	int diff_w = size[1] - (roi.width - 1);
-	int diff_h = size[0] - (roi.height - 1);
+	int diff_w = size[0] - (roi.width - 1);
+	int diff_h = size[1] - (roi.height - 1);
 	int cnt = 0;
 	
 	/* Iterate over each pixel in image */
-	for (i = 0; i < diff_h; i++) {
-		for (j = 0; j < diff_w; j++) {
-			/* Compute a pixel-wise metric between image and template */
-			for (ii = 0; ii < roi.height; ii++) {
-				for(jj = 0; jj < roi.width; jj++) {
-				/* sum */			 
-				proc_img[ii][jj] = cnt += 5;	
+	for (i = 0; i < diff_w; i++) {
+		for (j = 0; j < diff_h; j++) {
+			for (ii = i; ii < roi.width + i; ii++) {
+				for (jj = j; jj < roi.height + j; jj++) {
+				/* Compute a pixel-wise metric between image and template */
+				if (cnt > 255) cnt = 0;
+				proc_img[ii][jj] = ++cnt;
+				/* Sum */
 				}
-				cnt = 0;
-	 		}
-		/* Record the similarity */
+			}
+			/* Recore the similarity */
 		}
 	}
 }
