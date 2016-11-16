@@ -34,24 +34,47 @@ int size[2];
 unsigned char proc_img[DIM][DIM];
 {
 	
-	int i, j, ii, jj, sum;
-	float data, coeff;
+	int i, j, ii, jj, k, ell, sum_image, sum_template;
+	float data, coeff, f_bar, t_bar;
 	int diff_w = size[0] - (roi.width - 1);
 	int diff_h = size[1] - (roi.height - 1);
 	int cnt = 0;
+
+	/* Build image template */
+	unsigned char image_template[roi.width][roi.height];
+
+	/* 
+		Build image template 
+	*/
+
+	/* Access each vector x in original image to template width + offset */
+	for (i = roi.x; i < (roi.width + roi.x); i++) {
+		/* Access each element y in original image to template height + offset */
+		for (j = roi.y; j < (roi.height + roi.y); j++) {
+			image_template[i - roi.x][j - roi.y] = image[i][j];	
+			sum_template += image[i][j];
+		}
+	}
+
+	/* Compute template mean */
+	t_bar = sum_template / (roi.width * roi.height);
 	
-	/* Iterate over each pixel in image */
+	/* Do for each pixel in image */
 	for (i = 0; i < diff_w; i++) {
 		for (j = 0; j < diff_h; j++) {
+
+			/* Iterate over image slice */
 			for (ii = i; ii < roi.width + i; ii++) {
 				for (jj = j; jj < roi.height + j; jj++) {
-				/* Compute a pixel-wise metric between image and template */
-				if (cnt > 255) cnt = 0;
-				proc_img[ii][jj] = ++cnt;
-				/* Sum */
+					sum_image += image[ii][jj];
+					proc_img[ii][jj] = image_template[ii - i][jj - j];
 				}
 			}
-			/* Recore the similarity */
+			/* Computer current image slice mean */
+			f_bar = sum_image / (size[0] * size[1]);
+	
+			/* Computer normalized correction */
+			
 		}
 	}
 }
