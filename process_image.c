@@ -95,12 +95,11 @@ unsigned char proc_img[DIM][DIM];
 			}
 
 			/* Check for match */
-			if (c > 0.9) {
+			if (c > 0.8) {
 				/* Iterate over image window to find f_bar */
 				for (ii = i; ii < roi.width + i; ii++) {
 					for (jj = j; jj < roi.height + j; jj++) {
-						proc_img[ii][jj] = 255;
-						//proc_img[ii][jj] = image_template[ii - i][jj - j];
+						proc_img[ii][jj] = image[ii][jj] + 10;
 					}
 				}
 			}
