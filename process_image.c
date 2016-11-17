@@ -78,26 +78,39 @@ unsigned char proc_img[DIM][DIM];
 			/* Compute correlation for each pixel */
 			for (ii = i; ii < roi.width + i; ii++) {
 				for (jj = j; jj < roi.height + j; jj++) {
-					f_std = sqrt( powf( (image[ii][jj] - f_bar), 2) );
-					t_std = sqrt( powf( (image_template[ii][jj] - f_bar), 2) );
+
+					/* Sum standard deviations */
+					f_std += powf( (image[ii][jj] - f_bar), 2);
+					t_std += powf( (image_template[ii][jj] - f_bar), 2);
 					
-					/* Check for divide by zero */
-					if (f_std != 0 || t_std != 0) {
-						c_num = (image[ii][jj] - f_bar) * (image_template[ii][jj] - t_bar);
-
-						c_denom = f_std * t_std;
-
-						c = c_num / c_denom;
-
-						printf("c = %f\n", c);
-						if (c > 0.9) {
-							/* Match */
-							proc_img[ii][jj] = 255;
-						}
-					}
-						//proc_img[ii][jj] = image_template[ii - i][jj - j];
+					/* Sum numerator */
+					c_num += abs((int)((image[ii][jj] - f_bar) * (image_template[ii][jj] - t_bar)));
 				}
 			}
+			c_denom = sqrt(f_std * t_std);
+
+			/* Account for divide by zero */
+			if (f_std != 0 || t_std != 0) {
+				c = c_num / c_denom;	
+			}
+
+			/* Check for match */
+			if (c > 0.9) {
+				/* Iterate over image window to find f_bar */
+				for (ii = i; ii < roi.width + i; ii++) {
+					for (jj = j; jj < roi.height + j; jj++) {
+						proc_img[ii][jj] = 255;
+						//proc_img[ii][jj] = image_template[ii - i][jj - j];
+					}
+				}
+			}
+			
+			/* Reset values */	
+			f_std = 0;
+			t_std = 0;
+			c_num = 0;
+			c_denom = 0;
+			c = 0;
 		}
 	}
 }
