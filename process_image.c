@@ -35,7 +35,7 @@ unsigned char proc_img[DIM][DIM];
 {
 	
 	int i, j, ii, jj, k, ell, sum_image, sum_template;
-	float data, coeff, f_bar, t_bar;
+	float data, coeff, f_bar, t_bar, f_std, t_std, c, c_num, c_denom;
 	int diff_w = size[0] - (roi.width - 1);
 	int diff_h = size[1] - (roi.height - 1);
 	int cnt = 0;
@@ -63,18 +63,41 @@ unsigned char proc_img[DIM][DIM];
 	for (i = 0; i < diff_w; i++) {
 		for (j = 0; j < diff_h; j++) {
 
-			/* Iterate over image slice */
+			/* Iterate over image window to find f_bar */
 			for (ii = i; ii < roi.width + i; ii++) {
 				for (jj = j; jj < roi.height + j; jj++) {
 					sum_image += image[ii][jj];
-					proc_img[ii][jj] = image_template[ii - i][jj - j];
+					//proc_img[ii][jj] = image_template[ii - i][jj - j];
 				}
 			}
-			/* Computer current image slice mean */
-			f_bar = sum_image / (size[0] * size[1]);
-	
-			/* Computer normalized correction */
+
+			/* Compute current image window mean */
+			f_bar = sum_image / (roi.width * roi.height);
+			sum_image = 0;
 			
+			/* Compute correlation for each pixel */
+			for (ii = i; ii < roi.width + i; ii++) {
+				for (jj = j; jj < roi.height + j; jj++) {
+					f_std = sqrt( powf( (image[ii][jj] - f_bar), 2) );
+					t_std = sqrt( powf( (image_template[ii][jj] - f_bar), 2) );
+					
+					/* Check for divide by zero */
+					if (f_std != 0 || t_std != 0) {
+						c_num = (image[ii][jj] - f_bar) * (image_template[ii][jj] - t_bar);
+
+						c_denom = f_std * t_std;
+
+						c = c_num / c_denom;
+
+						printf("c = %f\n", c);
+						if (c > 0.9) {
+							/* Match */
+							proc_img[ii][jj] = 255;
+						}
+					}
+						//proc_img[ii][jj] = image_template[ii - i][jj - j];
+				}
+			}
 		}
 	}
 }

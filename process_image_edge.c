@@ -34,19 +34,21 @@ int size[2];
 unsigned char proc_img[DIM][DIM];
 {
 	
+	/* Use these flags to specify which filter to apply */
 	int vertical = 0;
 	int blur = 0;
 	int i, j, ii, jj, sum, proc_pixel;
 	float data, coeff;
 
+	/* TODO: Not sure why it works this way. */
 	int vert[K][K] = {			
-									{-1, 0, 1},
-									{-1, 0, 1},
-									{-1, 0, 1} };
-	int horiz[K][K] = {			
-									{-1, -1, -1},
+									{1, 1, 1},
 									{0, 0, 0},
-									{1, 1, 1} };
+									{-1, -1, -1} };
+	int horiz[K][K] = {			
+									{1, 0, -1},
+									{1, 0, -1},
+									{1, 0, -1} };
 
 	float box_filt[K][K] = {			
 									{0.111, 0.111, 0.111},
