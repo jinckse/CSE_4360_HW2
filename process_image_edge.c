@@ -1,5 +1,11 @@
 /** 
-TODO: Only works without normalizing sums at the moment 
+	@file image_process_edge.c
+
+	@brief This program performs edge detection on an image using horizontal and vertical Prewitt
+	edge templates. The process of convolving each part of the image and its surrounding neighbors
+	with the template produces an output that represents the edges found in the image. 
+
+	@author Jarrod Nix
 */
 
 #include <stdio.h>
@@ -34,96 +40,70 @@ int size[2];
 unsigned char proc_img[DIM][DIM];
 {
 	
-	/* Use these flags to specify which filter to apply */
-	int vertical = 0;
-	int blur = 0;
-	int i, j, ii, jj, sum, proc_pixel;
-	float data, coeff;
+	/** Flag to specify which type of edge detection to use */
+	int vertical = 1;
 
-	/* TODO: Not sure why it works this way. */
+	/** Counters */
+	int i, j, ii, jj;
+	
+	/** Convolution sum */
+	int sum;
+	
+	/** Image element data */
+	float data;
+
+	/** Prewitt template element data */
+	float coeff;
+
+	/** 
+		Note: Must use transpose of Prewitt templates 
+	*/
+
+	/** Vertical Prewitt template */
 	int vert[K][K] = {			
 									{1, 1, 1},
 									{0, 0, 0},
 									{-1, -1, -1} };
+
+	/** Horizontal Prewitt template */
 	int horiz[K][K] = {			
 									{1, 0, -1},
 									{1, 0, -1},
 									{1, 0, -1} };
 
-	float box_filt[K][K] = {			
-									{0.111, 0.111, 0.111},
-									{0.111, 0.111, 0.111},
-									{0.111, 0.111, 0.111} };
-	if (blur) {
-		printf("Using box filter\n");
-		/* Apply a Gaussian Blur to the image to reduce noise */
-		for (i = (K / 2); i < (size[0] - (K / 2) ); ++i) {
-		 for (j = K / 2; j < (size[1] - (K / 2) ); ++j) {
-			 sum = 0;
-		 
-			 /* Iterate over kernel */	
-			 for (ii = (-K / 2); ii <= (K / 2); ++ii) {
-				 for (jj = (-K / 2); jj <= (K / 2); ++jj) {
-					 data = image[i + ii][j + jj];
-					 coeff = box_filt[ii + (K / 2)][jj + (K / 2)];
-
-					 sum = sum + (data * coeff);
-					 sum = abs(sum);
-				 }
-			 }
-			 /* Normalize sum of each pixel */
-			 proc_img[i][j] = (sum * MAX_PIXEL) / DIM;
-		 }
-		}
-	}
-
-	else if (vertical) {
+	if (vertical) {
 		printf("Using vertical orentation template\n");
-		/* Process vertical edges */	
-		for (i = (K / 2); i < (size[0] - (K / 2) ); ++i) {
-			for (j = K / 2; j < (size[1] - (K / 2) ); ++j) {
-				sum = 0;
-			
-				/* Iterate over kernel */	
-				for (ii = (-K / 2); ii <= (K / 2); ++ii) {
-					for (jj = (-K / 2); jj <= (K / 2); ++jj) {
-						data = image[i + ii][j + jj];
-						coeff = vert[ii + (K / 2)][jj + (K / 2)];
-
-						sum = sum + (data * coeff);
-						sum = abs(sum);
-					}
-				}
-
-				/* Normalize sum of each pixel */
-				proc_img[i][j] = (sum * MAX_PIXEL) / DIM;
-			}
-		}
 	}
-	else if (!vertical){
+	else {
 		printf("Using horizontal orentation template\n");
-		/* Process horizontal edges */	
-		for (i = (K / 2); i < (size[0] - (K / 2) ); ++i) {
-			for (j = K / 2; j < (size[1] - (K / 2) ); ++j) {
-				sum = 0;
-			
-				/* Iterate over kernel */	
-				for (ii = (-K / 2); ii <= (K / 2); ++ii) {
-					for (jj = (-K / 2); jj <= (K / 2); ++jj) {
-						data = image[i + ii][j + jj];
-						coeff = horiz[ii + (K / 2)][jj + (K / 2)];
+	}
+		
+	/* Process vertical edges */	
+	for (i = (K / 2); i < (size[0] - (K / 2) ); ++i) {
+		for (j = K / 2; j < (size[1] - (K / 2) ); ++j) {
+			sum = 0;
+		
+			/* Convolve image kernel with template */	
+			for (ii = (-K / 2); ii <= (K / 2); ++ii) {
+				for (jj = (-K / 2); jj <= (K / 2); ++jj) {
+					data = image[i + ii][j + jj];
 
-						sum = sum + (data * coeff);
-						sum = abs(sum);
+					/** Use desired detection type */
+					if (vertical) {
+						coeff = vert[ii + (K / 2)][jj + (K / 2)];
 					}
+					else {
+						coeff = horiz[ii + (K / 2)][jj + (K / 2)];
+					}
+
+					sum = sum + (data * coeff);
+					sum = abs(sum);
 				}
-				/* Normalize sum of each pixel */
-				proc_img[i][j] = (sum * MAX_PIXEL) / DIM;
 			}
+
+			/* Normalize sum of each pixel */
+			proc_img[i][j] = (sum * MAX_PIXEL) / DIM;
 		}
 	}
-	else
-		printf("No selection made\n");
 }
-
 

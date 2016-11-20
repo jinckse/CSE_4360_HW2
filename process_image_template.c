@@ -39,67 +39,61 @@ int size[2];
 unsigned char proc_img[DIM][DIM];
 {
 
-	/** @var counter */
+	/** Counter */
 	int i;
 
-	/** @var counter */
+	/** Counter */
 	int j; 
 
-	/** @var counter */
+	/** Counter */
 	int ii;
 
-	/** @var counter */
+	/** Counter */
 	int jj; 
 
-	/** @var Original image element summation */
+	/** Original image element summation */
 	int sum_image ;
 
-	/** @var Current image template summation */
+	/** Current image template summation */
 	int sum_template;
 
-	/** @var Flag used to denote initial iteration over image template */
+	/** Flag used to denote initial iteration over image template */
 	int first_run = 1;
 
-	/** @var Out-of-bounds checker used when iterating template over image */
+	/** Out-of-bounds checker used when iterating template over image */
 	int diff_w = size[0] - (roi.width - 1);
 
-	/** @var Out-of-bounds checker used when iterating template over emage */
+	/** Out-of-bounds checker used when iterating template over emage */
 	int diff_h = size[1] - (roi.height - 1);
 
-	/** @var counter */
-	int cnt = 0;
-	
-	/** @var counter */
+	/** Image window element average */
 	float f_bar;
 
-	/** @var counter */
+	/** Image template element average */
 	float t_bar;
 
-	/** @var counter */
+	/** Standard deviation of current image window */
 	float f_std;
 
-	/** @var counter */
+	/** Standard deviation of current image template window */
 	float t_std;
 
-	/** @var counter */
+	/** Correlation result */
 	float c;
 
-	/** @var counter */
+	/** Correlation forumla numerator */
 	float c_num;
 
-	/** @var counter */
+	/** Correlation formula denomenator */
 	float c_denom;
 
-	/** @var counter */
-	float pixel_value;
-
-	/** @var counter */
+	/** Maximum correlation value */
 	float max;
 
-	/** @var counter */
+	/** Minimum correlation value */
 	float min;
 
-	/** @var Used to store image template */
+	/** Image template */
 	unsigned char image_template[roi.width][roi.height];
 
 	printf("Processing image...\n");
@@ -151,7 +145,7 @@ unsigned char proc_img[DIM][DIM];
 
 			/** Account for divide by zero */
 			if (f_std == 0 || t_std == 0) {
-				c = -1;	
+				c = 0;	
 			}
 			else {
 				c = c_num / c_denom;
