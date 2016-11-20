@@ -1,8 +1,8 @@
-/** 
-	@file process_image_template.c
+/**
+	@file process_image_edge.c
 
-	@brief This program processes an image to compute template maches based on
-	a user selected region of the image to match using normalized correlation.
+	@brief This program uses Prewitt templates and 2d convolution to detect vertical and horizontal
+	edges as determined by the value of a flag.
 
 	@author Jarrod Nix
 */
@@ -38,164 +38,81 @@ int size[2];
 
 unsigned char proc_img[DIM][DIM];
 {
-
-	/** @var counter */
-	int i;
-
-	/** @var counter */
-	int j; 
-
-	/** @var counter */
-	int ii;
-
-	/** @var counter */
-	int jj; 
-
-	/** @var Original image element summation */
-	int sum_image ;
-
-	/** @var Current image template summation */
-	int sum_template;
-
-	/** @var Flag used to denote initial iteration over image template */
-	int first_run = 1;
-
-	/** @var Out-of-bounds checker used when iterating template over image */
-	int diff_w = size[0] - (roi.width - 1);
-
-	/** @var Out-of-bounds checker used when iterating template over emage */
-	int diff_h = size[1] - (roi.height - 1);
-
-	/** @var counter */
-	int cnt = 0;
 	
-	/** @var counter */
-	float f_bar;
-
-	/** @var counter */
-	float t_bar;
-
-	/** @var counter */
-	float f_std;
-
-	/** @var counter */
-	float t_std;
-
-	/** @var counter */
-	float c;
-
-	/** @var counter */
-	float c_num;
-
-	/** @var counter */
-	float c_denom;
-
-	/** @var counter */
-	float pixel_value;
-
-	/** @var counter */
-	float max;
-
-	/** @var counter */
-	float min;
-
-	/** @var Used to store image template */
-	unsigned char image_template[roi.width][roi.height];
-
-	printf("Processing image...\n");
-
-	/**
-		Compute normalized correlation
+	/** 
+		Use this flag to specify which filter to apply 
 	*/
 
-	/** Access each vector x in original image to template width + offset */
-	for (i = roi.x; i < (roi.width + roi.x); i++) {
-		/** Access each element y in original image to template height + offset */
-		for (j = roi.y; j < (roi.height + roi.y); j++) {
-			/** Compute summation of template pixels */
-			sum_template += image[i][j];
-		}
+	/** @var flag */
+	int vertical = 0;
+
+	/** @var Counter */
+	int i;
+
+	/** @var Counter */
+	int j;
+
+	/** @var Counter */
+	int ii;
+
+	/** @var Counter */
+	int jj; 
+
+	/** @var Counter */
+	int sum; 
+
+	/** @var flag */
+	float data, coeff;
+
+	/**
+		Must use transpose of templates to alight with image storage organization 
+	*/
+	
+	/** @var Vertical Pewitt template */
+	int vert[K][K] = {			
+									{1, 1, 1},
+									{0, 0, 0},
+									{-1, -1, -1} };
+	
+	/** @var Horizontal Pewitt template */
+	int horiz[K][K] = {			
+									{1, 0, -1},
+									{1, 0, -1},
+									{1, 0, -1} };
+
+	if (vertical) {
+		printf("Using vertical orientation template\n");
+	}
+	else {
+		printf("Using horizontal orientation template\n");
 	}
 
-	/** Compute template mean */
-	t_bar = sum_template / (roi.width * roi.height);
-	
-	/** Do for each pixel in image */
-	for (i = 0; i < diff_w; i++) {
-		for (j = 0; j < diff_h; j++) {
-
-			/** Iterate over image window to find f_bar */
-			for (ii = i; ii < roi.width + i; ii++) {
-				for (jj = j; jj < roi.height + j; jj++) {
-					sum_image += image[ii][jj];
-				}
-			}
-
-			/** Compute current image window mean */
-			f_bar = sum_image / (roi.width * roi.height);
-			sum_image = 0;
-			
-			/** Compute summations for standard deviations and numerator */
-			for (ii = i; ii < roi.width + i; ii++) {
-				for (jj = j; jj < roi.height + j; jj++) {
-
-					/** Sum standard deviations */
-					f_std += powf( (image[ii][jj] - f_bar), 2);
-					t_std += powf( (image_template[ii][jj] - t_bar), 2);
-					
-					/** Sum numerator */
-					c_num += fabs(((image[ii][jj] - f_bar) * (image_template[ii][jj] - t_bar)));
-				}
-			}
-			c_denom = sqrt(f_std * t_std);
-
-			/** Account for divide by zero */
-			if (f_std == 0 || t_std == 0) {
-				c = -1;	
-			}
-			else {
-				c = c_num / c_denom;
-
-				/** intialize max and min to first c value in this window */
-				if (first_run) {
-					max = c;
-					min = c;
-					first_run = 0;
-				}
-
-				if (c > max) {
-					max = c;
-				}
-	
-				if (c < min) {
-					min = c;
-				}
-			}
+	/** Process vertical edges */	
+	for (i = (K / 2); i < (size[0] - (K / 2) ); ++i) {
+		for (j = K / 2; j < (size[1] - (K / 2) ); ++j) {
+			sum = 0;
 		
-			/**
-				Populate a new image with normalized correlation values at the center
-				of each template-sized image window.
-			*/
-			
-			/** Do for each element in current window */
-			for (ii = i; ii < roi.width + i; ii++) {
-				for (jj = j; jj < roi.height + j; jj++) {
+			/** Convolve image with kernel */	
+			for (ii = (-K / 2); ii <= (K / 2); ++ii) {
+				for (jj = (-K / 2); jj <= (K / 2); ++jj) {
+					data = image[i + ii][j + jj];
 					
-					/** Place the normalized correlation result in the center of the image window */
-					if (ii - i == (roi.width / 2) && jj - j == (roi.height / 2)) {
-						proc_img[ii][jj] = ( (c - min) / (max - min) ) * 255;
+					/** Use flags to determine what edges are desired */
+					if (vertical) {
+						coeff = vert[ii + (K / 2)][jj + (K / 2)];
 					}
+					else {
+						coeff = horiz[ii + (K / 2)][jj + (K / 2)];
+					}
+
+					sum = sum + (data * coeff);
+					sum = abs(sum);
 				}
 			}
 
-			/** Reset values */	
-			f_std = 0;
-			t_std = 0;
-			c_num = 0;
-			c_denom = 0;
-			c = 0;
+			/** Normalize sum of each pixel */
+			proc_img[i][j] = (sum * MAX_PIXEL) / DIM;
 		}
-		first_run = 1;
 	}
 }
 
